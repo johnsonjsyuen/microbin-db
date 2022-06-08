@@ -33,7 +33,7 @@ pub async fn create(
             .finish());
     }
 
-    let mut pastas = data.pastas.lock().unwrap();
+    let mut pastas = data.pastas.write().unwrap();
 
     let timenow: i64 = match SystemTime::now().duration_since(UNIX_EPOCH) {
         Ok(n) => n.as_secs(),

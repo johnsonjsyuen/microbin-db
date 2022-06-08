@@ -4,7 +4,8 @@ const ANIMAL_NAMES: &[&str] = &[
     "panda", "swan", "bison", "frog", "pig", "tiger", "camel", "gecko", "pigeon", "toad", "cat",
     "goat", "pony", "turkey", "cobra", "goose", "pug", "turtle", "crow", "hawk", "rabbit", "viper",
     "deer", "horse", "rat", "wasp", "dog", "jaguar", "raven", "whale", "dove", "koala", "seal",
-    "wolf", "duck", "lion", "shark", "worm", "eagle", "lizard", "sheep", "zebra",
+    "wolf", "duck", "lion", "shark", "worm", "eagle", "lizard", "sheep", "zebra", "kiwi", "possum",
+    "tuna", "abalone", "lobster", "prawn", "beetle"
 ];
 
 pub fn to_animal_names(mut number: i64) -> String {

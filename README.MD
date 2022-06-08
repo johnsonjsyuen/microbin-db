@@ -20,6 +20,13 @@ And run with your custom configuration:
 
 `microbin --port 8080 --highlightsyntax --editable`
 
+Database setup
+`
+sqlx database create
+sqlx migrate run
+DATABASE_URL="sqlite:data.db" cargo run
+`
+
 ### Features
 - Is very small
 - Animal names instead of random numbers for pasta identifiers (64 animals)

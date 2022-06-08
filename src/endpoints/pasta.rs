@@ -17,7 +17,7 @@ struct PastaTemplate<'a> {
 
 #[get("/pasta/{id}")]
 pub async fn getpasta(data: web::Data<AppState>, id: web::Path<String>) -> HttpResponse {
-    let mut pastas = data.pastas.lock().unwrap();
+    let mut pastas = data.pastas.write().unwrap();
 
     let id = to_u64(&*id.into_inner()).unwrap_or(0);
 
@@ -45,7 +45,7 @@ pub async fn getpasta(data: web::Data<AppState>, id: web::Path<String>) -> HttpR
 
 #[get("/url/{id}")]
 pub async fn redirecturl(data: web::Data<AppState>, id: web::Path<String>) -> HttpResponse {
-    let mut pastas = data.pastas.lock().unwrap();
+    let mut pastas = data.pastas.write().unwrap();
 
     let id = to_u64(&*id.into_inner()).unwrap_or(0);
 
@@ -72,7 +72,7 @@ pub async fn redirecturl(data: web::Data<AppState>, id: web::Path<String>) -> Ht
 
 #[get("/raw/{id}")]
 pub async fn getrawpasta(data: web::Data<AppState>, id: web::Path<String>) -> String {
-    let mut pastas = data.pastas.lock().unwrap();
+    let mut pastas = data.pastas.write().unwrap();
 
     let id = to_u64(&*id.into_inner()).unwrap_or(0);
 

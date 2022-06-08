@@ -14,7 +14,7 @@ use env_logger::Builder;
 use log::LevelFilter;
 use std::fs;
 use std::io::Write;
-use std::sync::Mutex;
+use std::sync::RwLock;
 
 pub mod args;
 pub mod pasta;
@@ -39,7 +39,7 @@ pub mod endpoints {
 }
 
 pub struct AppState {
-    pub pastas: Mutex<Vec<Pasta>>,
+    pub pastas: RwLock<Vec<Pasta>>,
 }
 
 #[actix_web::main]
@@ -71,7 +71,7 @@ async fn main() -> std::io::Result<()> {
     };
 
     let data = web::Data::new(AppState {
-        pastas: Mutex::new(dbio::load_from_file().unwrap()),
+        pastas: RwLock::new(dbio::load_from_file().unwrap()),
     });
 
     HttpServer::new(move || {

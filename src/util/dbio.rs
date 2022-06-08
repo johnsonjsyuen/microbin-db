@@ -13,7 +13,7 @@ pub fn save_to_file(pasta_data: &Vec<Pasta>) {
     match file {
         Ok(_) => {
             let writer = BufWriter::new(file.unwrap());
-            block_on(save_to_db(pasta_data));
+            block_on(save_to_db(pasta_data)).expect("unsuccessful write to SQLite");
             serde_json::to_writer(writer, &pasta_data).expect("Failed to create JSON writer");
         }
         Err(_) => {

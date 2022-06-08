@@ -21,7 +21,7 @@ pub async fn list(data: web::Data<AppState>) -> HttpResponse {
             .finish();
     }
 
-    let mut pastas = data.pastas.lock().unwrap();
+    let mut pastas = data.pastas.write().unwrap();
 
     remove_expired(&mut pastas);
 
