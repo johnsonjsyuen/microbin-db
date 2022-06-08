@@ -8,7 +8,7 @@ use crate::util::syntaxhighlighter::html_highlight;
 
 #[derive(Serialize, Deserialize)]
 pub struct Pasta {
-    pub id: u64,
+    pub id: i64,
     pub content: String,
     pub file: String,
     pub extension: String,
