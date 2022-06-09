@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::util::animalnumbers::to_animal_names;
 use crate::util::syntaxhighlighter::html_highlight;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Pasta {
     pub id: i64,
     pub content: String,

@@ -138,7 +138,7 @@ pub async fn create(
 
     let id = new_pasta.id;
 
-    insert_pasta(&data, &new_pasta).await?;
+    insert_pasta(&data, new_pasta.clone()).await?;
 
     pastas.push(new_pasta);
 
