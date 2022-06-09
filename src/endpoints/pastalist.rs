@@ -1,10 +1,11 @@
-use actix_web::{get, web, HttpResponse};
+use actix_web::{get, web, HttpResponse, Error};
 use askama::Template;
 
 use crate::args::{Args, ARGS};
 use crate::pasta::Pasta;
 use crate::util::misc::remove_expired;
 use crate::AppState;
+use crate::repository::list_pastas;
 
 #[derive(Template)]
 #[template(path = "pastalist.html")]
@@ -14,23 +15,20 @@ struct PastaListTemplate<'a> {
 }
 
 #[get("/pastalist")]
-pub async fn list(data: web::Data<AppState>) -> HttpResponse {
+pub async fn list(data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     if ARGS.no_listing {
-        return HttpResponse::Found()
+        return Ok(HttpResponse::Found()
             .append_header(("Location", "/"))
-            .finish();
+            .finish());
     }
 
-    let mut pastas = data.pastas.write().unwrap();
-
-    remove_expired(&mut pastas);
-
-    HttpResponse::Ok().content_type("text/html").body(
+    let pastas = list_pastas(&data).await?;
+    Ok(HttpResponse::Ok().content_type("text/html").body(
         PastaListTemplate {
             pastas: &pastas,
             args: &ARGS,
         }
-        .render()
-        .unwrap(),
-    )
+            .render()
+            .unwrap(),
+    ))
 }

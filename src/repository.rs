@@ -63,3 +63,36 @@ select * from pastas where pasta_id = ?
         }
     }
 }
+
+pub async fn list_pastas(data: &Data<AppState>) -> Result<Vec<Pasta>, Error> {
+    let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
+
+    let result = sqlx::query!(
+        "
+select * from pastas
+        ")
+        .fetch_all(&mut conn)
+        .await
+        .map_err(|e|
+            error::InternalError::new("Query read Error", StatusCode::INTERNAL_SERVER_ERROR)
+        );
+
+    match result {
+        Err(e) => Err(e.into()),
+        Ok(pastas) => {
+            let listed_pastas: Vec<Pasta> = pastas.into_iter().map(|pasta|
+                Pasta {
+                    id: pasta.pasta_id.unwrap(),
+                    content: pasta.content.unwrap(),
+                    file: pasta.file.unwrap(),
+                    extension: pasta.extension.unwrap(),
+                    private: pasta.private.unwrap(),
+                    editable: pasta.editable.unwrap(),
+                    created: pasta.created.unwrap(),
+                    expiration: pasta.expiration.unwrap(),
+                    pasta_type: pasta.pasta_type.unwrap(),
+                }).collect();
+            Ok(listed_pastas)
+        }
+    }
+}
