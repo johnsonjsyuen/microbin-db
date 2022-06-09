@@ -5,7 +5,7 @@ use sqlx::{Pool, Sqlite};
 
 use crate::{AppState, Pasta};
 
-pub async fn insert_pasta(data: &Data<AppState>, new_pasta: &Pasta)->Result<(), Error> {
+pub async fn insert_pasta(data: &Data<AppState>, new_pasta: &Pasta) -> Result<(), Error> {
     let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
 
     sqlx::query(
@@ -28,4 +28,38 @@ VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)
             error::InternalError::new("Insert Error", StatusCode::INTERNAL_SERVER_ERROR)
         )?;
     Ok(())
+}
+
+pub async fn read_pasta(data: &Data<AppState>, pasta_id: &i64) -> Option<Result<Pasta, Error>> {
+    let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
+
+    let result = sqlx::query!(
+        "
+select * from pastas where pasta_id = ?
+        ",
+        pasta_id)
+        .fetch_optional(&mut conn)
+        .await
+        .map_err(|e|
+            error::InternalError::new("Query read Error", StatusCode::INTERNAL_SERVER_ERROR)
+        );
+
+    match result {
+        Err(e) => Some(Err(e.into())),
+        Ok(None) => None,
+        Ok(Some(pasta)) => {
+            let found_pasta = Pasta {
+                id: pasta.pasta_id.unwrap(),
+                content: pasta.content.unwrap(),
+                file: pasta.file.unwrap(),
+                extension: pasta.extension.unwrap(),
+                private: pasta.private.unwrap(),
+                editable: pasta.editable.unwrap(),
+                created: pasta.created.unwrap(),
+                expiration: pasta.expiration.unwrap(),
+                pasta_type: pasta.pasta_type.unwrap(),
+            };
+            Some(Ok(found_pasta))
+        }
+    }
 }
