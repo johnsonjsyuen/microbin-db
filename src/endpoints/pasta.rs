@@ -1,5 +1,5 @@
-use actix_web::{get, web, HttpResponse};
-use actix_web::http::Error;
+use actix_web::{get, web, HttpResponse, error};
+use actix_web::http::{Error, StatusCode};
 use askama::Template;
 
 use crate::args::{Args, ARGS};
@@ -20,12 +20,11 @@ struct PastaTemplate<'a> {
 #[get("/pasta/{id}")]
 pub async fn getpasta(data: web::Data<AppState>, id: web::Path<String>) -> Result<HttpResponse, Error> {
     let mut pastas = data.pastas.write().unwrap();
+    remove_expired(&mut pastas);
 
     let id = to_u64(&*id.into_inner()).unwrap_or(0);
 
     println!("{}", id);
-
-    remove_expired(&mut pastas);
 
     match read_pasta(&data, &id).await {
         Some(Ok(found_pasta)) => {
@@ -39,9 +38,7 @@ pub async fn getpasta(data: web::Data<AppState>, id: web::Path<String>) -> Resul
             ))
         }
         Some(Err(_)) => {
-            Ok(HttpResponse::Ok()
-                .content_type("text/html")
-                .body(ErrorTemplate { args: &ARGS }.render().unwrap()))
+            Ok(HttpResponse::InternalServerError().body("Query read Error"))
         }
         None => {
             Ok(HttpResponse::Ok()
