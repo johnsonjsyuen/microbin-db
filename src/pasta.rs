@@ -15,7 +15,7 @@ pub struct Pasta {
     pub private: bool,
     pub editable: bool,
     pub created: i64,
-    pub expiration: i64,
+    pub expiration: i64, // Overloaded in DB to represent soft deletes with -1. 0 is no expiration
     pub pasta_type: String,
 }
 

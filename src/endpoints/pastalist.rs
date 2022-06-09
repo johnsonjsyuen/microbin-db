@@ -3,7 +3,6 @@ use askama::Template;
 
 use crate::args::{Args, ARGS};
 use crate::pasta::Pasta;
-use crate::util::misc::remove_expired;
 use crate::AppState;
 use crate::repository::list_pastas;
 

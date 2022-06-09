@@ -1,3 +1,4 @@
+use std::time::{SystemTime, UNIX_EPOCH};
 use actix_web::{Error, error, HttpResponse};
 use actix_web::http::StatusCode;
 use actix_web::web::Data;
@@ -56,10 +57,20 @@ select * from pastas where id = ?
 pub async fn list_pastas(data: &Data<AppState>) -> Result<Vec<Pasta>, Error> {
     let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
 
+    let timenow: i64 = match SystemTime::now().duration_since(UNIX_EPOCH) {
+        Ok(n) => n.as_secs(),
+        Err(_) => {
+            log::error!("SystemTime before UNIX EPOCH!");
+            0
+        }
+    } as i64;
+
+    // Overriding the macro type inference due to bug https://github.com/launchbadge/sqlx/issues/1294
     sqlx::query_as!(Pasta,
-        "
-select * from pastas
-        ")
+        r#"
+select * from pastas where "expiration: i64" > ? or expiration = 0
+        "#,
+         timenow)
         .fetch_all(&mut conn)
         .await
         .map_err(|e|

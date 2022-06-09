@@ -11,3 +11,6 @@ CREATE TABLE IF NOT EXISTS pastas
     expiration      INTEGER   NOT NULL   ,
     pasta_type      TEXT      NOT NULL
 );
+
+CREATE INDEX expired_pastas
+    ON pastas (expiration);
