@@ -12,12 +12,14 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 use chrono::Local;
 use env_logger::Builder;
 use log::LevelFilter;
-use std::fs;
+use std::{env, fs};
 use std::io::Write;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
+use sqlx::{Pool, Sqlite, SqlitePool};
 
 pub mod args;
 pub mod pasta;
+mod repository;
 
 pub mod util {
     pub mod animalnumbers;
@@ -40,6 +42,7 @@ pub mod endpoints {
 
 pub struct AppState {
     pub pastas: RwLock<Vec<Pasta>>,
+    pub sqlite_pool: Arc<Pool<Sqlite>>
 }
 
 #[actix_web::main]
@@ -69,9 +72,12 @@ async fn main() -> std::io::Result<()> {
             panic!("Couldn't create data directory ./pasta_data: {:?}", error);
         }
     };
+    let sqlite_pool = SqlitePool::connect(&env::var("DATABASE_URL").expect("DATABASE_URL not set"))
+        .await.expect("Could not open SQlite File");
 
     let data = web::Data::new(AppState {
         pastas: RwLock::new(dbio::load_from_file().unwrap()),
+        sqlite_pool: Arc::new(sqlite_pool)
     });
 
     HttpServer::new(move || {

@@ -1,3 +1,4 @@
+use std::io;
 use crate::dbio::save_to_file;
 use crate::util::animalnumbers::to_animal_names;
 use crate::util::misc::is_valid_url;
@@ -8,7 +9,9 @@ use askama::Template;
 use futures::TryStreamExt;
 use rand::Rng;
 use std::io::Write;
+use std::ops::Deref;
 use std::time::{SystemTime, UNIX_EPOCH};
+use crate::repository::insert_pasta;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -131,6 +134,28 @@ pub async fn create(
     }
 
     let id = new_pasta.id;
+
+    //
+    let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
+
+    sqlx::query(
+        "
+INSERT INTO pastas ( pasta_id, content, file, extension, private, editable, created, expiration, pasta_type)
+VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ")
+        .bind(&new_pasta.id)
+        .bind(&new_pasta.content)
+        .bind(&new_pasta.file)
+        .bind(&new_pasta.extension)
+        .bind(&new_pasta.private)
+        .bind(&new_pasta.editable)
+        .bind(&new_pasta.created)
+        .bind(&new_pasta.expiration)
+        .bind(&new_pasta.pasta_type)
+        .execute(&mut conn)
+        .await
+        .expect("sqlite insert error");
+    //
 
     pastas.push(new_pasta);
 
