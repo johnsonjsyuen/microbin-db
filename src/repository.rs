@@ -2,17 +2,17 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use actix_web::{Error, error, HttpResponse};
 use actix_web::http::StatusCode;
 use actix_web::web::Data;
-use sqlx::{Pool, Sqlite};
+use sqlx::{Pool};
 
 use crate::{AppState, Pasta};
 
 pub async fn insert_pasta(data: &Data<AppState>, new_pasta: Pasta) -> Result<(), Error> {
-    let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
+    let mut conn = data.pg_pool.acquire().await.expect("pg conn error");
 
     sqlx::query!(
         "
-INSERT INTO pastas ( id, content, file, extension, private, editable, created, expiration, pasta_type)
-VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO test.pastas ( id, content, file, extension, private, editable, created, expiration, pasta_type)
+VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9)
         ",
         new_pasta.id,
         new_pasta.content,
@@ -32,11 +32,11 @@ VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)
 }
 
 pub async fn read_pasta(data: &Data<AppState>, pasta_id: &i64) -> Option<Result<Pasta, Error>> {
-    let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
+    let mut conn = data.pg_pool.acquire().await.expect("sqlite conn error");
 
     let result = sqlx::query_as!(Pasta,
         "
-select * from pastas where id = ?
+select * from test.pastas where id = $1
         ",
         pasta_id)
         .fetch_optional(&mut conn)
@@ -55,7 +55,7 @@ select * from pastas where id = ?
 }
 
 pub async fn list_pastas(data: &Data<AppState>) -> Result<Vec<Pasta>, Error> {
-    let mut conn = data.sqlite_pool.acquire().await.expect("sqlite conn error");
+    let mut conn = data.pg_pool.acquire().await.expect("sqlite conn error");
 
     let timenow: i64 = match SystemTime::now().duration_since(UNIX_EPOCH) {
         Ok(n) => n.as_secs(),
@@ -68,7 +68,7 @@ pub async fn list_pastas(data: &Data<AppState>) -> Result<Vec<Pasta>, Error> {
     // Overriding the macro type inference due to bug https://github.com/launchbadge/sqlx/issues/1294
     sqlx::query_as!(Pasta,
         r#"
-select * from pastas where "expiration: i64" > ? or expiration = 0
+select * from test.pastas where expiration > $1 or expiration = 0
         "#,
          timenow)
         .fetch_all(&mut conn)

@@ -15,7 +15,9 @@ use log::LevelFilter;
 use std::{env, fs};
 use std::io::Write;
 use std::sync::{Arc, RwLock};
-use sqlx::{Pool, Sqlite, SqlitePool};
+use sqlx::{Pool, Postgres};
+use sqlx::postgres::PgPoolOptions;
+
 
 pub mod args;
 pub mod pasta;
@@ -42,7 +44,7 @@ pub mod endpoints {
 
 pub struct AppState {
     pub pastas: RwLock<Vec<Pasta>>,
-    pub sqlite_pool: Arc<Pool<Sqlite>>
+    pub pg_pool: Arc<Pool<Postgres>>
 }
 
 #[actix_web::main]
@@ -72,12 +74,14 @@ async fn main() -> std::io::Result<()> {
             panic!("Couldn't create data directory ./pasta_data: {:?}", error);
         }
     };
-    let sqlite_pool = SqlitePool::connect(&env::var("DATABASE_URL").expect("DATABASE_URL not set"))
-        .await.expect("Could not open SQlite File");
+    let postgres_pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect("postgresql://johnson:__-o0h_2M8XRj84GHDKcbg@free-tier8.aws-ap-southeast-1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&options=--cluster%3Dbroad-tern-1908"
+        ).await.expect("pg problem");
 
     let data = web::Data::new(AppState {
         pastas: RwLock::new(dbio::load_from_file().unwrap()),
-        sqlite_pool: Arc::new(sqlite_pool)
+        pg_pool: Arc::new(postgres_pool),
     });
 
     HttpServer::new(move || {
