@@ -5,7 +5,6 @@ use crate::endpoints::{
     create, edit, errors, help, pasta as pasta_endpoint, pastalist, remove, static_resources,
 };
 use crate::pasta::Pasta;
-use crate::util::dbio;
 use actix_web::middleware::Condition;
 use actix_web::{middleware, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -26,7 +25,6 @@ mod repository;
 pub mod util {
     pub mod animalnumbers;
     pub mod auth;
-    pub mod dbio;
     pub mod misc;
     pub mod syntaxhighlighter;
 }
@@ -43,7 +41,6 @@ pub mod endpoints {
 }
 
 pub struct AppState {
-    pub pastas: RwLock<Vec<Pasta>>,
     pub pg_pool: Arc<Pool<Postgres>>
 }
 
@@ -67,13 +64,6 @@ async fn main() -> std::io::Result<()> {
         ARGS.port.to_string()
     );
 
-    match fs::create_dir_all("./pasta_data") {
-        Ok(dir) => dir,
-        Err(error) => {
-            log::error!("Couldn't create data directory ./pasta_data: {:?}", error);
-            panic!("Couldn't create data directory ./pasta_data: {:?}", error);
-        }
-    };
     let postgres_pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(
@@ -81,8 +71,7 @@ async fn main() -> std::io::Result<()> {
         ).await.expect("pg problem");
 
     let data = web::Data::new(AppState {
-        pastas: RwLock::new(dbio::load_from_file().unwrap()),
-        pg_pool: Arc::new(postgres_pool),
+        pg_pool: Arc::new(postgres_pool)
     });
 
     HttpServer::new(move || {

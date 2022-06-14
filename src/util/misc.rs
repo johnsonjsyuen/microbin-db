@@ -39,8 +39,6 @@ pub fn remove_expired(pastas: &mut Vec<Pasta>) {
             false
         }
     });
-
-    dbio::save_to_file(pastas);
 }
 
 pub fn is_valid_url(url: &str) -> bool {

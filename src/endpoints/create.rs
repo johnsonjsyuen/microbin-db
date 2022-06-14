@@ -1,5 +1,4 @@
 use std::io;
-use crate::dbio::save_to_file;
 use crate::util::animalnumbers::to_animal_names;
 use crate::util::misc::is_valid_url;
 use crate::{AppState, Pasta, ARGS, repository};
@@ -38,8 +37,6 @@ pub async fn create(
             .append_header(("Location", "/"))
             .finish());
     }
-
-    let mut pastas = data.pastas.write().unwrap();
 
     let timenow: i64 = match SystemTime::now().duration_since(UNIX_EPOCH) {
         Ok(n) => n.as_secs(),
@@ -139,10 +136,6 @@ pub async fn create(
     let id = new_pasta.id;
 
     insert_pasta(&data, new_pasta.clone()).await?;
-
-    pastas.push(new_pasta);
-
-    save_to_file(&pastas);
 
     Ok(HttpResponse::Found()
         .append_header(("Location", format!("/pasta/{}", to_animal_names(id))))
