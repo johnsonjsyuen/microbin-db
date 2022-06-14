@@ -1,8 +1,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
-use actix_web::{Error, error, HttpResponse};
+use actix_web::{Error, error};
 use actix_web::http::StatusCode;
 use actix_web::web::Data;
-use sqlx::{Pool};
+
 
 use crate::{AppState, Pasta};
 
@@ -25,7 +25,7 @@ VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9)
         new_pasta.pasta_type)
         .execute(&mut conn)
         .await
-        .map_err(|e|
+        .map_err(|_e|
             error::InternalError::new("Insert Error", StatusCode::INTERNAL_SERVER_ERROR)
         )?;
     Ok(())
@@ -44,7 +44,7 @@ WHERE id = $2
         pasta_id)
         .execute(&mut conn)
         .await
-        .map_err(|e|
+        .map_err(|_e|
             error::InternalError::new("Update Error", StatusCode::INTERNAL_SERVER_ERROR)
         )?;
     Ok(())
@@ -60,7 +60,7 @@ select * from public.pastas where id = $1
         pasta_id)
         .fetch_optional(&mut conn)
         .await
-        .map_err(|e|
+        .map_err(|_e|
             error::InternalError::new("Query read Error", StatusCode::INTERNAL_SERVER_ERROR)
         );
 
@@ -92,7 +92,7 @@ select * from public.pastas where expiration > $1 or expiration = 0
          timenow)
         .fetch_all(&mut conn)
         .await
-        .map_err(|e|
+        .map_err(|_e|
             error::InternalError::new("Query read Error", StatusCode::INTERNAL_SERVER_ERROR).into()
         )
 }

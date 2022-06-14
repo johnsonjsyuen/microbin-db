@@ -5,7 +5,7 @@ use futures::TryStreamExt;
 
 use crate::{AppState, ARGS, Pasta};
 use crate::args::Args;
-use crate::endpoints::errors::ErrorTemplate;
+
 use crate::repository::{edit_pasta, read_pasta};
 use crate::util::animalnumbers::to_u64;
 
@@ -61,20 +61,17 @@ pub async fn post_edit(
     let mut new_content = String::from("");
 
     while let Some(mut field) = payload.try_next().await? {
-        match field.name() {
-            "content" => {
+        if field.name() == "content" {
                 while let Some(chunk) = field.try_next().await? {
                     new_content = std::str::from_utf8(&chunk).unwrap().to_string();
                 }
-            }
-            _ => {}
         }
     }
 
     match read_pasta(&data, &id).await {
         Some(Ok(found_pasta)) => {
             if found_pasta.editable {
-                edit_pasta(&data, &found_pasta.id, &*new_content);
+                edit_pasta(&data, &found_pasta.id, &*new_content).await?;
 
                 return Ok(HttpResponse::Found()
                     .append_header(("Location", format!("/pasta/{}", &found_pasta.id_as_animals())))

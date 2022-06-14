@@ -1,6 +1,6 @@
-use std::future::Future;
+
 use actix_web::{get, web, HttpResponse};
-use actix_web::http::{Error, StatusCode};
+use actix_web::http::{Error};
 use askama::Template;
 
 use crate::args::{Args, ARGS};
@@ -80,7 +80,7 @@ pub async fn getrawpasta(data: web::Data<AppState>, id: web::Path<String>) -> St
 
     match read_pasta(&data, &id).await {
         Some(Ok(found_pasta)) => {
-            return found_pasta.content
+            found_pasta.content
         }
         Some(Err(_)) => {
             String::from("Query read Error")

@@ -1,18 +1,18 @@
-use std::io;
+
 use crate::util::animalnumbers::to_animal_names;
 use crate::util::misc::is_valid_url;
-use crate::{AppState, Pasta, ARGS, repository};
+use crate::{AppState, Pasta, ARGS};
 use actix_multipart::Multipart;
-use actix_web::{get, web, Error, HttpResponse, Responder, error};
-use actix_web::error::DispatchError::InternalError;
+use actix_web::{get, web, Error, HttpResponse, Responder};
+
 use askama::Template;
 use futures::TryStreamExt;
 use rand::Rng;
 use std::io::Write;
-use std::ops::Deref;
+
 use std::time::{SystemTime, UNIX_EPOCH};
-use actix_web::http::StatusCode;
-use actix_web::web::Data;
+
+
 use crate::repository::insert_pasta;
 
 #[derive(Template)]

@@ -25,7 +25,7 @@ pub fn to_animal_names(mut number: i64) -> String {
         number -= digit * ANIMAL_NAMES.len().pow(power) as i64;
         if power > 0 {
             power -= 1;
-        } else if power <= 0 || number == 0 {
+        } else if power == 0 || number == 0 {
             break;
         }
     }
@@ -36,7 +36,7 @@ pub fn to_animal_names(mut number: i64) -> String {
 pub fn to_u64(animal_names: &str) -> Result<i64, &str> {
     let mut result = 0_i64;
 
-    let animals: Vec<&str> = animal_names.split("-").collect();
+    let animals: Vec<&str> = animal_names.split('-').collect();
 
     let mut pow = animals.len();
     for i in 0..animals.len() {

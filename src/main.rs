@@ -11,9 +11,9 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 use chrono::Local;
 use env_logger::Builder;
 use log::LevelFilter;
-use std::{env, fs};
+use std::{env};
 use std::io::Write;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc};
 use sqlx::{Pool, Postgres};
 use sqlx::postgres::PgPoolOptions;
 
@@ -97,7 +97,7 @@ async fn main() -> std::io::Result<()> {
                 HttpAuthentication::basic(util::auth::auth_validator),
             ))
     })
-    .bind(format!("0.0.0.0:{}", ARGS.port.to_string()))?
+    .bind(format!("0.0.0.0:{}", ARGS.port))?
     .workers(ARGS.threads as usize)
     .run()
     .await

@@ -7,13 +7,13 @@ use crate::AppState;
 use askama::Template;
 
 #[get("/remove/{id}")]
-pub async fn remove(data: web::Data<AppState>, id: web::Path<String>) -> HttpResponse {
+pub async fn remove(_data: web::Data<AppState>, id: web::Path<String>) -> HttpResponse {
     if ARGS.readonly {
         return HttpResponse::Found()
             .append_header(("Location", "/"))
             .finish();
     }
-    let id = to_u64(&*id.into_inner()).unwrap_or(0);
+    let _id = to_u64(&*id.into_inner()).unwrap_or(0);
 
     HttpResponse::Ok()
         .content_type("text/html")

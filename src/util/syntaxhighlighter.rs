@@ -30,8 +30,5 @@ pub fn html_highlight(text: &str, extension: &str) -> String {
 
     // Rewrite colours to ones that are compatible with water.css and both light/dark modes
     highlighted_content2 = highlighted_content2.replace("style=\"color:#323232;\"", "");
-    highlighted_content2 =
-        highlighted_content2.replace("style=\"color:#183691;\"", "style=\"color:blue;\"");
-
-    return highlighted_content2;
+    highlighted_content2.replace("style=\"color:#183691;\"", "style=\"color:blue;\"")
 }
