@@ -11,7 +11,7 @@ pub fn html_highlight(text: &str, extension: &str) -> String {
 
     let syntax = ps
         .find_syntax_by_extension(extension)
-        .or(Option::from(ps.find_syntax_plain_text()))
+        .or_else(|| Option::from(ps.find_syntax_plain_text()))
         .unwrap();
     let mut h = HighlightLines::new(syntax, &ts.themes["InspiredGitHub"]);
 
