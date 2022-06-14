@@ -1,12 +1,13 @@
-use crate::args::Args;
-use crate::dbio::save_to_file;
-use crate::endpoints::errors::ErrorTemplate;
-use crate::util::animalnumbers::to_u64;
-use crate::{AppState, Pasta, ARGS};
 use actix_multipart::Multipart;
-use actix_web::{get, post, web, Error, HttpResponse};
+use actix_web::{Error, get, HttpResponse, post, web};
 use askama::Template;
 use futures::TryStreamExt;
+
+use crate::{AppState, ARGS, Pasta};
+use crate::args::Args;
+use crate::endpoints::errors::ErrorTemplate;
+use crate::repository::{edit_pasta, read_pasta};
+use crate::util::animalnumbers::to_u64;
 
 #[derive(Template)]
 #[template(path = "edit.html", escape = "none")]
@@ -19,27 +20,28 @@ struct EditTemplate<'a> {
 pub async fn get_edit(data: web::Data<AppState>, id: web::Path<String>) -> HttpResponse {
     let id = to_u64(&*id.into_inner()).unwrap_or(0);
 
-    for pasta in pastas.iter() {
-        if pasta.id == id {
-            if !pasta.editable {
-                return HttpResponse::Found()
-                    .append_header(("Location", "/"))
-                    .finish();
+    match read_pasta(&data, &id).await {
+        Some(Ok(found_pasta)) => {
+            if found_pasta.editable {
+                HttpResponse::Ok().content_type("text/html").body(
+                    EditTemplate {
+                        pasta: &found_pasta,
+                        args: &ARGS,
+                    }
+                        .render()
+                        .unwrap(),
+                )
+            } else {
+                HttpResponse::Unauthorized().finish()
             }
-            return HttpResponse::Ok().content_type("text/html").body(
-                EditTemplate {
-                    pasta: &pasta,
-                    args: &ARGS,
-                }
-                .render()
-                .unwrap(),
-            );
+        }
+        Some(Err(_)) => {
+            HttpResponse::InternalServerError().body("Query read Error")
+        }
+        None => {
+            HttpResponse::NotFound().finish()
         }
     }
-
-    HttpResponse::Ok()
-        .content_type("text/html")
-        .body(ErrorTemplate { args: &ARGS }.render().unwrap())
 }
 
 #[post("/edit/{id}")]
@@ -69,17 +71,23 @@ pub async fn post_edit(
         }
     }
 
-
-            if pasta.editable {
-                // TODO Implement repo method for edit
-                pasta.content.replace_range(.., &*new_content);
+    match read_pasta(&data, &id).await {
+        Some(Ok(found_pasta)) => {
+            if found_pasta.editable {
+                edit_pasta(&data, &found_pasta.id, &*new_content);
 
                 return Ok(HttpResponse::Found()
-                    .append_header(("Location", format!("/pasta/{}", pastas[i].id_as_animals())))
+                    .append_header(("Location", format!("/pasta/{}", &found_pasta.id_as_animals())))
                     .finish());
+            } else {
+                Ok(HttpResponse::Unauthorized().finish())
             }
-
-    Ok(HttpResponse::Ok()
-        .content_type("text/html")
-        .body(ErrorTemplate { args: &ARGS }.render().unwrap()))
+        }
+        Some(Err(_)) => {
+            Ok(HttpResponse::InternalServerError().body("Query read Error"))
+        }
+        None => {
+            Ok(HttpResponse::NotFound().finish())
+        }
+    }
 }

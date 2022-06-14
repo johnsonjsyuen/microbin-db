@@ -31,6 +31,25 @@ VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9)
     Ok(())
 }
 
+pub async fn edit_pasta(data: &Data<AppState>, pasta_id: &i64, new_content: &str) -> Result<(), Error> {
+    let mut conn = data.pg_pool.acquire().await.expect("pg conn error");
+
+    sqlx::query!(
+        "
+UPDATE public.pastas
+SET content = $1
+WHERE id = $2
+        ",
+        new_content,
+        pasta_id)
+        .execute(&mut conn)
+        .await
+        .map_err(|e|
+            error::InternalError::new("Update Error", StatusCode::INTERNAL_SERVER_ERROR)
+        )?;
+    Ok(())
+}
+
 pub async fn read_pasta(data: &Data<AppState>, pasta_id: &i64) -> Option<Result<Pasta, Error>> {
     let mut conn = data.pg_pool.acquire().await.expect("sqlite conn error");
 

@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use linkify::{LinkFinder, LinkKind};
 use std::fs;
 
-use crate::{dbio, Pasta};
+use crate::{Pasta};
 
 pub fn remove_expired(pastas: &mut Vec<Pasta>) {
     // get current time - this will be needed to check which pastas have expired
