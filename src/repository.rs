@@ -11,7 +11,7 @@ pub async fn insert_pasta(data: &Data<AppState>, new_pasta: Pasta) -> Result<(),
 
     sqlx::query!(
         "
-INSERT INTO test.pastas ( id, content, file, extension, private, editable, created, expiration, pasta_type)
+INSERT INTO public.pastas ( id, content, file, extension, private, editable, created, expiration, pasta_type)
 VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9)
         ",
         new_pasta.id,
@@ -36,7 +36,7 @@ pub async fn read_pasta(data: &Data<AppState>, pasta_id: &i64) -> Option<Result<
 
     let result = sqlx::query_as!(Pasta,
         "
-select * from test.pastas where id = $1
+select * from public.pastas where id = $1
         ",
         pasta_id)
         .fetch_optional(&mut conn)
@@ -68,7 +68,7 @@ pub async fn list_pastas(data: &Data<AppState>) -> Result<Vec<Pasta>, Error> {
     // Overriding the macro type inference due to bug https://github.com/launchbadge/sqlx/issues/1294
     sqlx::query_as!(Pasta,
         r#"
-select * from test.pastas where expiration > $1 or expiration = 0
+select * from public.pastas where expiration > $1 or expiration = 0
         "#,
          timenow)
         .fetch_all(&mut conn)

@@ -283,3 +283,19 @@ Displays your MicroBin's version information.
 ### --wide
 
 Changes the maximum width of the UI from 720 pixels to 1080 pixels.
+
+
+## Johnson's Changes
+
+Run on Cockroach DB Cloud
+```
+DATABASE_URL="postgresql://johnson:__-o0h_2M8XRj84GHDKcbg\
+@free-tier8.aws-ap-southeast-1.cockroachlabs.cloud:26257/\
+defaultdb?sslmode=verify-full&options=--cluster%3Dbroad-tern-1908"
+```
+
+Run on Cockroach DB Local
+
+```
+DATABASE_URL="postgresql://root@0.0.0.0:26257/defaultdb?sslmode=disable"
+```
